@@ -1,0 +1,22 @@
+{
+  "name": "DynaCrypt",
+  "version": "1.0",
+  "description": "Encrypts Dynalist Content",
+  "permissions": ["https://dynalist.io/", "activeTab", "declarativeContent"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://dynalist.io/*"],
+      "run_at": "document_start",
+      "js": ["keystore.js", "contentScript.js"]
+    }
+  ],
+  "web_accessible_resources": ["keystore.js", "xhook.js", "inject.js", "lz-string.js"],
+  "page_action": {
+    "default_popup": "popup.html"
+  },
+  "manifest_version": 2
+}
