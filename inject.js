@@ -68,6 +68,8 @@
           continue;
         let meta = data.diff2.meta;
         for (m of meta) {
+          if (!('meta' in m))
+            continue;
           let metaData = JSON.parse(m.meta);
           if ('c' in metaData)
             metaData.c = await prefixEncrypt(metaData.c);
