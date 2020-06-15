@@ -34,8 +34,11 @@
   }
 
   function prefixEncrypt(msg) {
+    if (msg.startsWith('🔑')) {
+      return Promise.resolve(msg);
+    }
     return encrypt(msg).then(encrypted => {
-      return '🔑' + encrypted
+      return '🔑' + encrypted;
     });
   }
 
