@@ -92,17 +92,37 @@
         for (n of nodes) {
           if (!n.meta)
             continue;
-          let metaData = JSON.parse(n.meta);
-          if ('c' in metaData)
-            metaData.c = await mayDecrypt(metaData.c);
-          if ('n' in metaData)
-            metaData.n = await mayDecrypt(metaData.n);
-          n.meta = JSON.stringify(metaData);
+          n.meta = await decryptMeta(n.meta);
         }
         el.data = JSON.stringify(data);
       }
     }
     return bundle;
+  }
+
+  async function decryptMeta(meta) {
+    if (!meta)
+      return "";
+    let metaData = JSON.parse(meta);
+    if ('c' in metaData)
+      metaData.c = await mayDecrypt(metaData.c);
+    if ('n' in metaData)
+      metaData.n = await mayDecrypt(metaData.n);
+    return JSON.stringify(metaData);
+  }
+
+  async function decryptHistory(history) {
+    for (diff of history.diffs) {
+      if (!('meta' in diff))
+        continue;
+      for (metaEl of diff.meta) {
+        if ('meta_new' in metaEl)
+          metaEl.meta_new = await decryptMeta(metaEl.meta_new);
+        if ('meta_old' in metaEl)
+          metaEl.meta_old = await decryptMeta(metaEl.meta_old);
+      }
+    }
+    return history;
   }
 
   xhook.before((request, callback) => {
@@ -130,18 +150,33 @@
   });
   xhook.after((request, response, callback) => {
     if (response.status == 200) {
-      rep = JSON.parse(response.text);
-      //console.log('Response', request.url, rep);
-      if (request.url == '/api/bundle_binary') {
-        decryptBundle(rep.bundle).then(decrypted => {
-          rep.bundle = decrypted
-          response.text = JSON.stringify(rep);
-          callback();
-        }).catch(e => {
-          console.error('Could not decrypt:', e.message);
-          callback();
-        });
+      try {
+        var rep = JSON.parse(response.text);
+      } catch(e) {
+        callback();
         return;
+      }
+      //console.log('Response', request.url, rep);
+      switch (request.url) {
+        case '/api/bundle_binary':
+          decryptBundle(rep.bundle).then(decrypted => {
+            rep.bundle = decrypted
+            response.text = JSON.stringify(rep);
+            callback();
+          }).catch(e => {
+            console.error('Could not decrypt:', e);
+            callback();
+          });
+          return;
+        case '/api/doc/history':
+          decryptHistory(rep).then(decrypted => {
+            response.text = JSON.stringify(decrypted);
+            callback();
+          }).catch(e => {
+            console.error('Could not decrypt:', e);
+            callback();
+          });
+          return;
       }
     }
     callback();
