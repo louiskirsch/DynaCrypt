@@ -1,6 +1,6 @@
 {
   "name": "DynaCrypt",
-  "version": "1.1",
+  "version": "1.2",
   "description": "Encrypts Dynalist Content",
   "permissions": ["https://dynalist.io/", "activeTab", "declarativeContent"],
   "background": {
