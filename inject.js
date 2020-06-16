@@ -173,7 +173,7 @@
         var body = request.body;
       }
       //console.log('Request to', request.url, JSON.parse(body));
-      if (request.url == '/api/bundle_binary') {
+      if (request.url.startsWith('/api/bundle_binary')) {
         encryptBundle(JSON.parse(body).bundle).then(encrypted => {
           request.body = LZString.compressToUint8Array(JSON.stringify({
             bundle: encrypted
@@ -199,6 +199,7 @@
       //console.log('Response', request.url, rep);
       switch (request.url) {
         case '/api/bundle_binary':
+        case '/api/bundle_binary_large':
           decryptBundle(rep.bundle).then(decrypted => {
             rep.bundle = decrypted
             response.text = JSON.stringify(rep);
