@@ -31,7 +31,7 @@ function importKey(password) {
     false,
     ["deriveKey"]
   ).then(function(importedPassword) {
-    let salt = encoder.encode("TODO find the salt")
+    let salt = encoder.encode("ThisIsTheDynaCryptSalt")
     return window.crypto.subtle.deriveKey(
       {
         "name": "PBKDF2",
