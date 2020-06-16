@@ -13,9 +13,10 @@ inject('inject.js');
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   importKey(request.password).then(m => {
-    sendResponse(m);
+    sendResponse({success: true});
     window.location.reload();
   }).catch(e => {
+    sendResponse({success: false});
     console.error("Error while importing key", e);
   });
   return true;

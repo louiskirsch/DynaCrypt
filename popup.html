@@ -2,13 +2,23 @@
 <html>
   <head>
     <style>
+      body {
+        padding: 5px;
+      }
       input {
-        margin: 5px;
+        margin-top: 5px;
+      }
+      .error {
+        color: #F44336;
+      }
+      .success {
+        color: #4CAF50;
       }
     </style>
   </head>
   <body>
     <div>
+      <span id='message'></span>
       <input type="password" id="password" name="password" minlength="12" required />
       <input type="submit" id="changePassword" value="Set password"/>
     </div>
