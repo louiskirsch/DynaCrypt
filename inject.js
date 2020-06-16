@@ -7,9 +7,15 @@
     return Uint8Array.from(atob(data), c => c.charCodeAt(0))
   }
 
+  function concatTypedArrays(a, b) { // a, b TypedArray of same type
+        var c = new (a.constructor)(a.length + b.length);
+        c.set(a, 0);
+        c.set(b, a.length);
+        return c;
+  }
+
   let encoder = new TextEncoder("utf-8");
   let decoder = new TextDecoder("utf-8");
-  let iv = base64ToBuffer(window.localStorage.getItem('DynaCrypt_iv'));
   let keyPromise = new KeyStore().open().then(store => {
     return store.getKey('DynaCrypt');
   }).then(keyObject => {
@@ -25,8 +31,9 @@
     return keyPromise.then(key => {
       if (key === false)
         return msg;
+      let iv = window.crypto.getRandomValues(new Uint8Array(12));
       return window.crypto.subtle.encrypt({name: "AES-GCM", iv: iv}, key, encoder.encode(msg)).then(result => {
-        return bufferToBase64(result);
+        return bufferToBase64(concatTypedArrays(iv, new Uint8Array(result)));
       });
     }).catch(e => {
       console.error('Error while encrypting data', e.message);
@@ -57,7 +64,9 @@
     return keyPromise.then(key => {
       if (key === false)
         return Promise.reject('No key available');
-      return window.crypto.subtle.decrypt({name: "AES-GCM", iv: iv}, key, base64ToBuffer(msg)).then(result => {
+      let buffer = base64ToBuffer(msg);
+      let iv = buffer.slice(0, 12);
+      return window.crypto.subtle.decrypt({name: "AES-GCM", iv: iv}, key, buffer.slice(12)).then(result => {
         return decoder.decode(result);
       });
     })
