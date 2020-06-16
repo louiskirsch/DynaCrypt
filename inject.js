@@ -14,8 +14,12 @@
         return c;
   }
 
+  let encStatusSet = new Set();
+  let encStatusCss = document.createElement('style');
+  encStatusCss.type = "text/css";
   function addStatus() {
     $('.AppHeader-desktopControls').prepend($('<div class="AppHeader-e2e">E2E Encrypted</div>'));
+    $(document.head).append(encStatusCss);
   }
 
   let encoder = new TextEncoder("utf-8");
@@ -49,17 +53,30 @@
     });
   }
 
-  function prefixEncrypt(msg) {
+  function prefixEncrypt(msg, server_id) {
     if (msg.startsWith('🔑')) {
       return Promise.resolve(msg);
     }
     return encrypt(msg).then(encrypted => {
+      markEncrypted(server_id);
       return '🔑' + encrypted;
     });
   }
 
-  function mayDecrypt(msg) {
+  function markEncrypted(server_id) {
+    if (!encStatusSet.has(server_id)) {
+      encStatusSet.add(server_id);
+      encStatusCss.innerHTML += `
+      .Node-bullet[href$='z=`+server_id+`']:before {
+        content: "\\e91a";
+      }
+      `;
+    }
+  }
+
+  function mayDecrypt(msg, server_id) {
     if (msg.startsWith('🔑')) {
+      markEncrypted(server_id);
       return decrypt(msg.replace('🔑', '')).catch(e => {
         console.error('Error while decrypting data', e);
         return '🔑 Could not decrypt';
@@ -88,14 +105,16 @@
         if (!('diff2' in data) || data.diff2 == null)
           continue;
         let meta = data.diff2.meta;
+        let nodes = data.diff2.nodes;
         for (m of meta) {
           if (!('meta' in m))
             continue;
           let metaData = JSON.parse(m.meta);
+          let server_id = nodes[m.i];
           if ('c' in metaData)
-            metaData.c = await prefixEncrypt(metaData.c);
+            metaData.c = await prefixEncrypt(metaData.c, server_id);
           if ('n' in metaData)
-            metaData.n = await prefixEncrypt(metaData.n);
+            metaData.n = await prefixEncrypt(metaData.n, server_id);
           m.meta = JSON.stringify(metaData);
         }
         el.data = JSON.stringify(data);
@@ -108,12 +127,12 @@
     for (el of bundle) {
       if (el.path == '/api/doc/load') {
         let data = JSON.parse(el.data);
-        data.title = await mayDecrypt(data.title);
+        data.title = await mayDecrypt(data.title, data.root_node_server_id);
         let nodes = data.nodes;
         for (n of nodes) {
           if (!n.meta)
             continue;
-          n.meta = await decryptMeta(n.meta);
+          n.meta = await decryptMeta(n.meta, n.server_id);
         }
         el.data = JSON.stringify(data);
       }
@@ -121,14 +140,14 @@
     return bundle;
   }
 
-  async function decryptMeta(meta) {
+  async function decryptMeta(meta, server_id) {
     if (!meta)
       return "";
     let metaData = JSON.parse(meta);
     if ('c' in metaData)
-      metaData.c = await mayDecrypt(metaData.c);
+      metaData.c = await mayDecrypt(metaData.c, server_id);
     if ('n' in metaData)
-      metaData.n = await mayDecrypt(metaData.n);
+      metaData.n = await mayDecrypt(metaData.n, server_id);
     return JSON.stringify(metaData);
   }
 
