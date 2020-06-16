@@ -7,3 +7,6 @@
   font-family: "IcoMoon", sans-serif;
   content: "\e904";
 }
+.Node-bullet.encrypted:before {
+  content: "\e91a";
+}

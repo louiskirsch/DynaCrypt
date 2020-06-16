@@ -14,12 +14,41 @@
         return c;
   }
 
-  let encStatusSet = new Set();
-  let encStatusCss = document.createElement('style');
-  encStatusCss.type = "text/css";
+  let encryptedIds = new Set();
+  let newBullets = {};
   function addStatus() {
     $('.AppHeader-desktopControls').prepend($('<div class="AppHeader-e2e">E2E Encrypted</div>'));
-    $(document.head).append(encStatusCss);
+    let observer = new MutationObserver(mutations => {
+      for (mutation of mutations) {
+        for (newNode of mutation.addedNodes) {
+          if (newNode.nodeType == 1 && newNode.hasClass('Node-contentContainer')) {
+            let bullet = newNode.previousSibling.previousSibling;
+            let id = bullet.href.split('z=')[1];
+            if (encryptedIds.has(id))
+              bullet.addClass('encrypted');
+            else {
+              bullet.removeClass('encrypted');
+              newBullets[id] = bullet;
+            }
+          }
+        }
+        for (removedNode of mutation.removedNodes) {
+          if (removedNode.nodeType == 1 && removedNode.hasClass('Node')) {
+            let bullets = $(removedNode).find('.Node-bullet');
+            for (b of bullets) {
+              let id = b.href.split('z=')[1];
+              delete newBullets[id];
+            }
+          }
+        }
+      }
+    });
+    observer.observe($('.Document')[0], {
+      childList: true,
+      attributes: false,
+      characterData: false,
+      subtree: true,
+    });
   }
 
   let encoder = new TextEncoder("utf-8");
@@ -64,13 +93,10 @@
   }
 
   function markEncrypted(server_id) {
-    if (!encStatusSet.has(server_id)) {
-      encStatusSet.add(server_id);
-      encStatusCss.innerHTML += `
-      .Node-bullet[href$='z=`+server_id+`']:before {
-        content: "\\e91a";
-      }
-      `;
+    encryptedIds.add(server_id);
+    if (server_id in newBullets) {
+      newBullets[server_id].addClass('encrypted');
+      delete newBullets[server_id];
     }
   }
 
