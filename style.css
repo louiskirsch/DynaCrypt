@@ -1,0 +1,9 @@
+.AppHeader-e2e {
+  position: absolute;
+  left: 5px;
+  bottom: 6px;
+}
+.AppHeader-e2e:before {
+  font-family: "IcoMoon", sans-serif;
+  content: "\e904";
+}

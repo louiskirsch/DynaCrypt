@@ -14,15 +14,24 @@
         return c;
   }
 
+  function addStatus() {
+    $('.AppHeader-desktopControls').prepend($('<div class="AppHeader-e2e">E2E Encrypted</div>'));
+  }
+
   let encoder = new TextEncoder("utf-8");
   let decoder = new TextDecoder("utf-8");
   let keyPromise = new KeyStore().open().then(store => {
     return store.getKey('DynaCrypt');
   }).then(keyObject => {
-    if (keyObject !== undefined)
+    if (keyObject !== undefined) {
+      if (document.readyState === 'loading')
+        document.addEventListener('DOMContentLoaded', addStatus);
+      else
+        addStatus();
       return keyObject.key;
-    else
+    } else {
       return false;
+    }
   }).catch(e => {
     console.error('Error loading encryption key:', e);
   });

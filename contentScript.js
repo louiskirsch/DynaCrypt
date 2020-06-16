@@ -6,10 +6,18 @@ function inject(name) {
   };
   (document.head || document.documentElement).appendChild(s);
 }
+function injectCss(name) {
+  var link = document.createElement('link');
+  link.type = "text/css";
+  link.rel = "stylesheet";
+  link.href = chrome.runtime.getURL(name);
+  document.documentElement.appendChild(link);
+}
 inject('xhook.js');
 inject('keystore.js');
 inject('lz-string.js');
 inject('inject.js');
+injectCss('style.css');
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   importKey(request.password).then(m => {
