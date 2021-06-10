@@ -17,7 +17,7 @@
   let encryptedIds = new Set();
   let newBullets = {};
   function addStatus() {
-    $('.AppHeader-desktopControls').prepend($('<div class="AppHeader-e2e">E2E Encrypted</div>'));
+    $('.AppHeader-desktopControls').prepend($('<div class="AppHeader-e2e">Encrypted</div>'));
     let observer = new MutationObserver(mutations => {
       for (mutation of mutations) {
         for (newNode of mutation.addedNodes) {
