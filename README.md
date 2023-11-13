@@ -5,7 +5,7 @@ Also see Dynalist forum: https://talk.dynalist.io/t/dynacrypt-client-side-encryp
 
 **Disclaimer:
 I do not take any responsibility for the security of this extension or any data loss due to bugs or mishandling of passwords.
-The extension is NOT production ready and has still to be through-roughly tested.**
+The extension is NOT production ready and has still to be thoroughly tested.**
 
 How it works:
 It hijacks the XHR communication between the dynalist client and the dynalist server. All outgoing items are encrypted, all incoming items are decrypted.
